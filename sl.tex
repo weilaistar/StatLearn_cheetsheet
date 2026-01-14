@@ -1,0 +1,889 @@
+\section{统计学习问题分类}
+监督学习：回归、分类；无监督学习：聚类、变换（降维/投影、嵌入）
+
+
+
+\section{一元统计分析}
+\paragraph{极大似然}
+似然函数：$L(\theta)\prod_i p(x^{(i)}|\theta)$，最大化似然函数得参数的极大似然估计$\theta_{ML}$,常用办法是对似然函数取负对数，再寻找负对数似然 (NLL) 函数的极小值
+\paragraph{贝叶斯法}
+
+\begin{equation}
+    P(\Theta |X^{(1)},...,X^{(n)})=\frac{P(X^{(1)},...,X^{(n)}|\Theta)P(\Theta)}{P(X^{(1)},...,X^{(n)})}
+\end{equation}
+
+先验和后验属于同一类分布的情况在贝叶斯方法中称为共轭先验 ，是贝叶斯方法中设定先验的一种常见做法
+
+\paragraph{评价准则}
+统计量：样本的函数
+
+一致性：如果随着样本数量的增大，估计量依概率收敛于真实值，即$\forall \epsilon > 0, \lim_{n\to\infty} P(|\hat{\theta}_n - \theta| < \epsilon) = 1$则称估计量是（弱）一致的。
+
+无偏性：如果估计量的期望等于真实值，即对任意 $\theta$ 有 $\mathbb{E}[\hat{\theta}] = \theta$，则称估计量是无偏的，否则就是有偏的。将 $\mathbb{E}[\hat{\theta}] - \theta$ 称作估计量的偏差 (bias)。
+
+有效性：估计量的方差应该尽可能小。如果有两个无偏估计量$\hat{\theta}_1$和$\hat{\theta}_2$，且对任意 $\theta$ 有 $\mathbb{V}[\hat{\theta}_1] < \mathbb{V}[\hat{\theta}_2]$，则称 $\hat{\theta}_1$ 比 $\hat{\theta}_2$ 更有效。
+
+充分统计量:设总体$X$的概率函数带有未知参数 $\theta$，统计量 $\hat{\theta} = f (X^{(1)}, . . . , X^{(n)})$ 其中$f$ 是预定函数，如果条件概率函数 $\mathbb{P}(X^{(1)}, . . . , X^{(n)}|\hat{\theta})$ 与 $\theta$ 无关，则称 $\hat{\theta}$ 是 $\theta$ 的充分统计量。
+
+\paragraph{因子分解定理}
+若样本的概率函数能够分解为$\mathbb{P}(X^{(1)}, . . . , X^{(n)}) = g(x^{(1)}, . . . , x^{(n)})h(f (x^{(1)}, . . . , x^{(n)}); \theta)$，则 $\hat{\theta} = f (X^{(1)}, . . . , X^{(n)})$ 是 $\theta$ 的充分统计量
+
+\paragraph{指数族分布的充分统计量}
+若总体服从指数族分布$P(X) = g(x)h(\theta) \exp\left(\theta^T \phi (x) \right),$其中$\phi (x)$称为特征基函数，则$\sum_{i = 1}^{n} \phi (X^{(i)}) $是 $\theta$ 的充分统计量。高斯分布$\phi (x)=(x^2,x)^T$
+
+\paragraph{最小均方误差估计风险分解}$\mathbb{E} [(\hat{\theta} - \theta)^2] = (\mathbb{E}[\hat{\theta} - \theta])^2 + \mathbb{V}[\hat{\theta} - \theta] = (\mathbb{E}[\hat{\theta}] - \theta)^2 + \mathbb{V} [\hat{\theta}]$第一项是估计量的偏差的平方，第二项是估计量的方差。偏差和方差分别反映了估计量的系统误差和随机误差，均方误差最小化同时考虑了系统误差和随机误差。如果将估计量限定为无偏的，则最小均方误差估计量就是 一致最小方差无偏估计(UMVUE)。如果允许估计量有偏，则最小均方误差估计可以不同于 UMVUE。
+
+\paragraph{非参数统计分析}
+经验分布函数(EDF):$\hat{F}(x) = \frac{1}{n}\sum_{i=1}^n I(x^{(i)} \le x)$
+
+平滑:$\widetilde{F}(x)\triangleq \int_{t}^{} \hat{F}(t)k(x-t) \,dt  $, k 称为平滑核函数或简称核函数，概率密度函数估计: $\hat{f}(x) = \frac{1}{n}\sum_{i=1}^n k\left(x - x^{(i)}\right)$
+
+k 近邻 (k-NN) 法: 在实数轴上的每个点 x，调节区间宽度 $h(x)$ 使得区间 $[x-h(x), x+h(x)]$ 中恰好有 k 个数据，则可用$\hat{f}(x) = \frac{k}{2n h(x)}$来估计密度
+
+\section{线性回归}
+
+\paragraph{最小二乘法}
+
+\begin{equation}
+    \min_{w,b} \mathcal{E} (w,b)=\min_{w,b}\sum_{i=1}^n (y^{(i)} - (w x^{(i)} + b))^2
+\end{equation}
+
+\begin{equation}
+    w_{LS}=\frac{\sum_{i=1}^n (x^{(i)}-\bar{x})(y^{(i)}-\bar{y})}{\sum_{i=1}^n (x^{(i)}-\bar{x})^2},b_{LS}=\bar{y}-w_{LS}\bar{x}
+\end{equation}
+
+\paragraph{正则化}
+
+带约束优化问题：
+\begin{equation}
+    \min_{w}\sum (y^{(i)} - w x^{(i)})^2,s.t. w^2 \le c
+\end{equation}
+\begin{equation}
+    L(w,\lambda)=\sum (y^{(i)} - w x^{(i)})^2 + \lambda (w^2 - c)
+\end{equation}
+\begin{equation}
+    w_{reg}=\frac{\sum x^{(i)}y^{(i)}}{\sum (x^{(i)})^2+\lambda}
+\end{equation}
+正则化是在求最小二乘解的时候限制参数$w$的取值范围，正则化权重越大，取值范围限定得越小。
+
+偏差-方差均衡:
+\begin{equation}
+    \mathbb{E}[\widehat{w}] = \frac{\sum (x^{(i)})^2}{\sum (x^{(i)})^2 + \epsilon }w, \mathbb{V}[\widehat{w}] = \frac{\sum (x^{(i)})^2 \sigma^2}{(\sum (x^{(i)})^2 + \epsilon)^2}
+\end{equation}
+$\epsilon$越大， $\mathbb{E}[\widehat{w}]$ 偏离$w$越多，偏差平方越大； $\mathbb{V}[\widehat{w}]$ 越小，方差越小。综合考虑偏差和方差，则可以找到一个合适的$\epsilon$，使得两项之和达到最小
+
+贝叶斯：
+$W\sim N(0,\sigma_{w}^2)$,$P(Y^{(i)}|W)\sim N(w x^{(i)}, \sigma^2)$, 则$\epsilon=\sigma^2/\sigma_w^2$，正则化项实质上对应于后验分布中由先验分布引入的项
+
+\paragraph{最小二乘回归}
+\begin{equation}
+    X=
+    \begin{bmatrix}
+        (x^{(1)})^T\\
+        \vdots \\
+        (x^{(n)})^T
+    \end{bmatrix}
+\end{equation}
+\begin{equation}
+    w_{LS}=arg\min_{w}(y-Xw)^T(y-Xw)
+\end{equation}
+\begin{equation}
+    X^Ty=X^TXw
+\end{equation}
+
+\paragraph{带基函数的回归}
+\begin{equation}
+    \varPhi \triangleq (f_{1},...,f_{p})^T, y=w^T\varPhi(x)
+\end{equation}
+\begin{equation}
+    \varPhi ^T \varPhi w_{LS}=\varPhi ^T y
+\end{equation}
+
+\paragraph{岭回归}
+\begin{equation}
+    \min_{w} (y-X w)^T(y-X w) + \lambda w^Tw
+\end{equation}
+\begin{equation}
+    w_{ridge}=(X^TX+\lambda I)^{-1}X^Ty
+\end{equation}
+
+\paragraph{贝叶斯线性回归}
+假设$P(W)=N(m_{0},S_{0})$，样本条件分布如下，可得
+\begin{equation}
+    P(Y^{(1)},...,Y^{(n)}|W)=\prod N(w^Tx^{(i)},\sigma^2)
+\end{equation}
+\begin{equation}
+    P(W|Y^{(1)},...,Y^{(n)})=N(m_{n},S_{n})
+\end{equation}
+\begin{equation}
+    m_{n}=S_{n}(S_{0}^{-1}m_{0}+\frac{1}{\sigma^2}X^Ty)
+\end{equation}
+\begin{equation}
+    S_{n}=(S_{0}^{-1}+\frac{1}{\sigma^2}X^TX)
+\end{equation}
+序贯学习：
+\begin{equation}
+\begin{split}
+    P(Y^{(1)},...,Y^{(n+1)}|W)= \\
+    \frac{P(Y^{(1)},...,Y^{(n)}|W)P(Y^{(n+1)}|W)}{P(Y^{(n+1)}|Y^{(1)},...,Y^{(n)})}
+\end{split}
+\end{equation}
+
+\paragraph{模型评价与选择}
+一般来说，如果模型中可学习参数太少，模型的拟合能力很弱，在训练数据上的经验风险很大，风险也很大，这种现象称为欠拟合。经验风险降低但风险反而升高的现象在统计学习中称为过拟合
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\columnwidth]{sl/risks.png}
+\end{figure}
+
+\paragraph{赤池信息量准则}
+$AIC=2NLL+2p$,其中，$NLL$是训练数据上估计的负对数似然，是参数的个数。AIC值越小，模型越好。当$p$一定时，负对数似然越小的回归函数越好，也就是说极大似然估计是最好的，代入得$AIC=nln(\mathcal{E} (w_{LS}))+2p$
+
+\paragraph{贝叶斯模型评价}
+对参数（随机变量）求期望，称为模型证据
+
+\paragraph{LASSO}
+\begin{equation}
+    \min_{w} (y-X w)^T(y-X w) + \lambda \|w\|_1
+\end{equation}
+lasso 回归虽然具有特征选择等优点，但它一般情况下没有闭式解
+
+\paragraph{核回归}
+\begin{equation}
+    \widehat{f}(x)\triangleq \sum_{i = 1}^{n}  y^{(i)} k(x, x^{(i)})
+\end{equation}
+Mercer条件：令矩阵$K$，其中$K_{ij}=k(x^{(i)},x^{(j)})$，要求对任意$x$, $K$半正定。有$k(x,y)=k(y,x)$，$k(x,y)=(\varPhi (x))^T\varPhi (y)$
+
+\begin{equation}
+    \widehat{f}(x)\triangleq \sum_{i = 1}^{n}  y^{(i)} \varPhi (x^{(i)})^T\varPhi (x)=y^T\Phi \varPhi (x)=w^T\varPhi (x)
+\end{equation}
+
+\paragraph{K近邻回归}
+\begin{equation}
+    \widehat{f}(x)\triangleq \frac{1}{k}\sum_{j = 1}^{k}  y^{(n_j)},s.t. x^{(n_j)}\in N_{k}(x)
+\end{equation}
+
+
+\section{线性分类}
+
+\paragraph{线性分类}
+\begin{equation}
+    y=\mathrm{sign}(w_{LS}^Tx+b_{LS})
+\end{equation}
+有train-test mismatch问题
+
+\paragraph{zero-one loss/0-1 loss}
+考虑到sign函数，平方损失函数等价于
+\begin{equation}
+    L(w,b,x,y)\triangleq I(y\neq sign(w^Tx+b))
+\end{equation}
+
+\paragraph{Fisher投影(LDA)}对于+1类，$v_{+}$为均值，$m_{+}=w^Tv_{+}$为投影后均值，$\boldsymbol{S}_{+}$为协方差矩阵，$S_{+}=w^T\boldsymbol{S}_{+}w$为投影后方差。-1类同理。类内方差$S_{w}=S_{+}+S_{-}$类间方差$(m_{+}-m_{-})^2$，求：
+\begin{equation}
+    \min_{w} w^\mathsf{T} (\boldsymbol{S}_{+}+\boldsymbol{S}_{-})w,\text{s.t.} w^\mathsf{T} (v_{+}-v_{-})(v_{+}-v_{-})^\mathsf{T} w\geqslant C
+\end{equation}
+
+\begin{equation}
+    w\varpropto (\boldsymbol{S}_{+}+\boldsymbol{S}_{-})^{-1}(v_{+}-v_{-})
+\end{equation}
+
+\paragraph{感知机Perceptron}
+使用代理损失函数：
+\begin{equation}
+    L(w,b,x,y)\triangleq \max(0,-y(w^Tx+b))
+\end{equation}
+使用随机梯度下降SGD
+\begin{equation}
+    if y_i(w^Tx_i+b)<0:w=w+\eta y_ix_i,b=b+\eta y_i
+\end{equation}
+对偶形式：$w=\sum \alpha_i y_i x_i, b=\sum \alpha_i y_i, \alpha_i\geq 0$，直接学$\alpha_i$
+\begin{equation}
+    if y_i(\sum \alpha_j y_j x_j^Tx_i+\sum \alpha_j y_j)<0:\alpha_i=\alpha_i+\eta
+\end{equation}
+最终分类器为$sign(\sum \alpha_i y_i (x_i^T x +1))$
+
+\paragraph{带基函数感知机}
+\begin{equation}
+    if y_i((\sum \alpha_j y_j \varPhi (x_j))^T \varPhi (x_i))<0:\alpha_i=\alpha_i+\eta
+\end{equation}
+最终分类器为$sign((\sum \alpha_i y_i \varPhi (x_i))^T\varPhi (x))$
+
+\paragraph{带核函数感知机}
+\begin{equation}
+    if \sum_j \alpha_j y_i y_j k(x_i,x_j)<0:\alpha_i=\alpha_i+\eta
+\end{equation}
+最终分类器为$sign(\sum \alpha_i y_i k(x_i,x))$
+
+\paragraph{交叉熵损失}
+\begin{equation}
+    CE(B(p),B(q))=-pln q-(1-p)ln(1-q)
+\end{equation}
+
+\paragraph{逻辑回归}
+样本$(x_i, y_i)$,$y_i\sim B(q_i)$,$q_i=f(x_i;w,b)$，令
+\begin{equation}
+    q_i=\frac{1}{1+exp(-w^Tx_i-b)}\triangleq \sigma (w^Tx_i+b)
+\end{equation}
+$\sigma(x)=\frac{1}{1+e^-x}$+交叉熵损失=逻辑回归
+
+\paragraph{广义逻辑回归GLR}
+\begin{equation}
+    \min_w \sum (-y_ilnq_i-(1-y_i)ln(1-q_i))
+\end{equation}
+其中$q_i=\frac{1}{1+exp(-w^T\varPhi (x_i))}$
+
+分类器为$y=sign(-w^T\varPhi (x))$
+
+\paragraph{GLR的解}
+\begin{equation}
+    L(w)=\sum (-y_ilnq_i-(1-y_i)ln(1-q_i))
+\end{equation}
+\begin{equation}
+    \nabla L(w)=\sum (q_i - y_i)\varPhi (x_i)=\Phi^T(q-y)
+\end{equation}
+\begin{equation}
+    \nabla \nabla L(w)=\sum q_i(1-q_i)\varPhi (x_i)\varPhi^T (x_i)=\Phi^TR\Phi
+\end{equation}
+其中$R=diag(q_i(1-q_i))$，根据牛顿迭代法
+\begin{equation}
+    w^{new}=w^{old}-(\Phi^TR\Phi)^{-1}\Phi^T(q-y)
+\end{equation}
+令$z\triangleq \Phi w^{old} - R^{-1}(q-y)$，有
+\begin{equation}
+    w^{new}=(\Phi^TR\Phi)^{-1}\Phi^TRz
+\end{equation}
+$w^{new}$可视为加权最小二乘问题的解
+\begin{equation}
+    \min_{w} (z-\Phi w)^TR(z-\Phi w)
+\end{equation}
+当$q_i$远离0.5时权重变低
+
+\paragraph{朴素贝叶斯}
+\begin{equation}
+    P(Y=i|X)=\frac{P(Y=i)P(X|Y=i)}{\sum_{i = 1}^{n} P(Y=i)P(X|Y=i) }
+\end{equation}
+其中$P(X|Y=i)=\prod_j P(X_j|Y=i)$
+
+\paragraph{K-NN}
+\begin{equation}
+    \widehat{f}(x)\triangleq sign(\frac{1}{k}\sum_{j = 1}^{k} y^{(n_j)}),s.t. x^{(n_j)}\in N_{k}(x)
+\end{equation}
+
+\paragraph{稀疏表示}
+\begin{equation}
+    x\approx \sum_{i = 1}^{n}  \alpha_i x^{(i)},s.t. \sum_{i = 1}^{n} I(\alpha_i\neq 0)=k
+\end{equation}
+$\alpha=(\alpha_1,...,\alpha_n)^T$称为K-稀疏向量，分类器为
+\begin{equation}
+    \widehat{f}(x)\triangleq sign(\frac{1}{k}\sum_{j = 1}^{k} y^{(n_j)}),s.t. \alpha_{n_j}\neq 0
+\end{equation}
+解$\alpha$:
+\begin{equation}
+    \min_{\alpha} (x-X\alpha)^T(x-X\alpha)+\lambda \|\alpha\|_1
+\end{equation}
+其中$X=(x^{(1)},...,x^{(n)})$，把2-范数换成1-范数也行
+
+\paragraph{硬边界SVM}
+假设数据线性可分，分类器无误差，分类边界$w^Tx_i+b=0$，则$y_i=sign(w^Tx_i+b)$，距离可写为
+\begin{equation}
+    d_i=\frac{|w^Tx_i+b|}{\|w\|_2}=\frac{y_i(w^Tx_i+b)}{\|w\|_2}
+\end{equation}
+最大间隔问题为$\max_{w,b}\min_i d_i$，记为
+\begin{equation}
+    \max_{w,b} \gamma (w,b), \gamma (w,b)\triangleq \min_{i} \frac{y_i(w^Tx_i+b)}{\|w\|_2}
+\end{equation}
+考虑到$\forall \alpha>0,\gamma(\alpha w,\alpha b)=\gamma(w,b)$，问题化为
+\begin{equation}
+    \max_{w,b} \frac{1}{\|w\|_2},min_i y_i(w^T x_i+b)=1
+\end{equation}
+进一步松弛为
+\begin{equation}
+    \min_{w,b} \frac{1}{2}\|w\|^2_2,s.t.\forall i,y_i(w^T x_i+b)\geq 1
+\end{equation}
+拉格朗日乘子$\alpha=(\alpha_1,...,\alpha_n)^T$，拉格朗日函数为
+\begin{equation}
+    L(w,b,\alpha)=\frac{1}{2}\|w\|^2_2+\sum_{i = 1}^{n}  \alpha_i(1-y_i(w^T x_i+b))
+\end{equation}
+KKT条件为
+\begin{equation}
+    \nabla_w L(w,b,\alpha)=0 \Rightarrow  w=\sum_{i = 1}^{n}  \alpha_i y_i x_i
+\end{equation}
+\begin{equation}
+    \frac{\partial }{\partial b} L(w,b,\alpha)=0 \Rightarrow \sum_{i = 1}^{n}  \alpha_i y_i=0
+\end{equation}
+\begin{equation}
+    \alpha_i \geq 0, i=1,...,n
+\end{equation}
+\begin{equation}
+    1-y_i(w^T x_i+b)\leq 0,i=1,...,n
+\end{equation}
+\begin{equation}
+    \alpha_i(1-y_i(w^Tx_i+b))=0,i=1,...,n
+\end{equation}
+当$\alpha_i>0$时，距离满足$y_i(w^Tx_i+b)=1$，只有这些点对计算$w$有贡献，称为支持向量
+
+\paragraph{软边界SVM}
+数据通常不线性可分；有时可分，但为扩大间隔，去掉一些。
+\begin{equation}
+    \min_{w,b} \frac{1}{2}\|w\|^2_2,s.t.\sum_{i = 1}^{n}  I(y_i(w^T x_i+b)<1)\leq c
+\end{equation}
+用代理损失函数$\max(1-y_i(w^T x_i+b),0)$，用拉格朗日法
+\begin{equation}
+    \min_{w,b} \frac{1}{2}\|w\|^2_2+\lambda \sum_{i = 1}^{n} \max(1-y_i(w^T x_i+b),0)
+\end{equation}
+令$\xi_i=\max(0,1-y_i(w^T x_i+b))$，再松弛为
+\begin{equation}
+\begin{split}
+   \min_{w,b} \frac{1}{2}\|w\|^2_2+\lambda \sum_{i = 1}^{n} \xi_i, s.t. \forall i,&\xi_i \geq 1-y_i(w^T x_i+b) ,\\ &\xi_i \geq 0
+\end{split}
+\end{equation}
+拉格朗日函数为
+\begin{equation}
+\begin{split}
+    L(w,b,\xi,\alpha,\beta)=\frac{1}{2}\|w\|^2_2+\lambda \sum_{i = 1}^{n} \xi_i -\sum_{i = 1}^{n} \beta_i \xi_i\\
+    -\sum_{i = 1}^{n} \alpha_i (y_i(w^Tx_i+b)-1+\xi_i)
+\end{split}
+\end{equation}
+KKT条件为
+\begin{equation}
+    \nabla _w L(w,b,\xi,\alpha,\beta)=0 \Rightarrow w=\sum_{i = 1}^{n} \alpha_iy_ix_i
+     \alpha_iy_i=0
+\end{equation}
+\begin{equation}
+    \frac{\partial }{\partial b} L(w,b,\xi,\alpha,\beta)=0 \Rightarrow \sum_{i = 1}^{n}
+\end{equation}
+\begin{equation}
+    \frac{\partial }{\partial \xi} L(w,b,\xi,\alpha,\beta)=0 \Rightarrow \alpha_i +\beta_i=\lambda
+\end{equation}
+\begin{equation}
+    \alpha_i \geq 0, \beta_i \geq 0, i=1,...,n
+\end{equation}
+\begin{equation}
+    \xi_i\geq 1-y_i(w^Tx_i+b),\xi_i \geq 0, i=1,...,n
+\end{equation}
+\begin{equation}
+    \alpha_i (y_i(w^Tx_i+b)-1+\xi_i)=0,i=1,...,n
+\end{equation}
+\begin{equation}
+    \beta_i \xi_i=0,i=1,...,n
+\end{equation}
+
+
+代掉$\beta_i$，得
+\begin{equation}
+\begin{split}
+    &w=\sum_{i = 1}^{n} \alpha_iy_ix_i\\
+    &\sum_{i = 1}^{n} \alpha_iy_i=0\\
+    &0\leq \alpha_i\leq \lambda, i=1,...,n\\
+    &\xi_i\geq 1-y_i(w^Tx_i+b),\xi_i \geq 0, i=1,...,n\\
+    &\alpha_i (y_i(w^Tx_i+b)-1+\xi_i)=0,i=1,...,n\\
+    &(\lambda -\alpha_i)\xi_i=0,i=1,...,n
+\end{split}
+\end{equation}
+所有距离可分为3类
+\begin{equation}
+\begin{split}
+    &y_i(w^Tx_i+b)>1 \Rightarrow \alpha_i=0, \xi_i=0\\
+    &y_i(w^Tx_i+b)=1 \Rightarrow 0<\alpha_i<\lambda, \xi_i=0\\
+    &y_i(w^Tx_i+b)<1 \Rightarrow \alpha_i=\lambda, \xi_i>0
+\end{split}
+\end{equation}
+当$\alpha_i>0$时，距离满足$y_i(w^Tx_i+b)\leq 1$，只有这些点对计算$w$有贡献，称为支持向量
+
+\paragraph{对偶问题}
+$\max_\alpha\min_{w,b,\xi} L(w,b,\xi,\alpha)$，由KKT条件得
+\begin{equation}
+\begin{split}
+    \max_\alpha -\frac{1}{2}\sum_{i = 1}^{n} \sum_{j = 1}^{n} \alpha_i \alpha_j y_i y_j x_i^Tx_j +\sum_{i = 1}^{n} \alpha_i\\
+    \text{s.t. } 0\leq \alpha_i \leq \lambda, \sum_{i = 1}^{n} \alpha_i y_i=0
+\end{split}
+\end{equation}
+分类器为$y=sign(\sum_{i = 1}^{n} \alpha_i y_i x_i^Tx + b)$，$b$由$0<\alpha_i<\lambda$的支持向量计算得出
+
+\paragraph{带基函数SVM \& 核SVM}
+\begin{equation}
+\begin{split}
+   \min_{w,b} \frac{1}{2}\|w\|^2_2+\lambda \sum_{i = 1}^{n} \xi_i, s.t. \forall i,\xi_i \geq 0 ,\\ \xi_i \geq 1-y_i(w^T \varPhi (x_i)+b)
+\end{split}
+\end{equation}
+KKT条件为：
+\begin{equation}
+\begin{split}
+    &w=\sum_{i = 1}^{n} \alpha_iy_i\varPhi (x_i)\\
+    &\sum_{i = 1}^{n} \alpha_iy_i=0\\
+    &0\leq \alpha_i\leq \lambda, i=1,...,n\\
+    &\xi_i\geq 1-y_i(w^T\varPhi (x_i)+b),\xi_i \geq 0, i=1,...,n\\
+    &\alpha_i (y_i(w^T\varPhi (x_i)+b)-1+\xi_i)=0,i=1,...,n\\
+    &(\lambda -\alpha_i)\xi_i=0,i=1,...,n
+\end{split}
+\end{equation}
+对偶问题为
+\begin{equation}
+\label{SMO}
+\begin{split}
+    \max_\alpha -\frac{1}{2}\sum_{i = 1}^{n} \sum_{j = 1}^{n} \alpha_i \alpha_j y_i y_j \varPhi (x_i)^T\varPhi (x_j) +\sum_{i = 1}^{n} \alpha_i\\
+    \text{s.t. } 0\leq \alpha_i \leq \lambda, \sum_{i = 1}^{n} \alpha_i y_i=0
+\end{split}
+\end{equation}
+分类器为$y=sign(\sum_{i = 1}^{n} \alpha_i y_i \varPhi (x_i)^T\varPhi (x) + b)$
+
+核函数$k(x_i,x_j)=\varPhi (x_i)^T\varPhi (x_j)$
+
+\paragraph{序列最小优化算法SMO}
+随机选择两个$\alpha_p$和$\alpha_q$，固定其他$\alpha_i$，在\eqref{SMO}中$arg\max_{\alpha_p,\alpha_q}$
+
+\paragraph{比较}
+贝叶斯分类规则:对于$(X,Y)$,使用0-1loss,最佳分类器为
+\begin{equation}
+\begin{split}
+    f^*(x)=arg\min_{f} E_{X,Y}[I(Y\neq f(X))]=\\
+    arg\max_{k\in \{+1,-1\}} P(Y=k|X=x)
+\end{split}
+\end{equation}
+
+LDA假设各类服从高斯分布，协方差矩阵相同
+
+GLR假设各类服从指数族分布
+
+朴素贝叶斯认为$P(X|Y)=\prod_j P(X_j|Y)$
+
+K-NN认为贝叶斯最优分类器在局部是常数
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|}
+\hline
+方法 & 损失函数  \\
+\hline
+感知机 & $\max(-y(w^T x+b),0)$ \\
+\hline
+逻辑回归 & $ln(1+exp(-y(w^T x+b)))$\\
+\hline 
+SVM & $\max(1-y(w^T x+b),0)$ \\
+\hline
+\end{tabular}
+\end{table}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\columnwidth]{sl/losses.png}
+\end{figure}
+
+对0-1loss的上界进行优化
+
+\paragraph{$0-r_{+1}-r_{-1}loss$}
++1类误分损失$r_{+1}$，-1类误分损失$r_{-1}$
+
+Precision： $\frac{TP}{TP+FP}$；
+Recall/TPR： $\frac{TP}{TP+FN}$；
+FPR： $\frac{FP}{FP+TN}$；
+F1-value： $2\cdot \frac{Precision \cdot Recall}{Precision+Recall}$；
+ROC曲线：以FPR为横轴，TPR为纵轴绘制的曲线；AUC：ROC曲线下的面积
+
+\paragraph{正则化}
+考虑到几何解释，SVM本身就使用L2正则化；逻辑回归自然可以使用L1或L2正则化；对于朴素贝叶斯，可以使用拉普拉斯平滑
+
+\paragraph{基函数和核函数}
+所有方法均可用基函数(视作预处理);SVM和感知机可用核函数;K-NN可用核函数定义距离
+
+\paragraph{Softmax回归}
+设$P(Y=k)=1/K,P(X|Y=k)=exp(\theta_k^T \varPhi (x))$则
+\begin{equation}
+    P(Y=k|X=x)=\frac{exp(\theta_k^T \varPhi (x))}{\sum_l exp(\theta_l^T \varPhi (x))}
+\end{equation}
+问题形式为
+\begin{equation}
+    \min_{\theta} -\sum_{i = 1}^{n} \sum_{k = 1}^{K} I(y_i=k) ln \frac{exp(\theta_k^T \varPhi (x))}{\sum_l exp(\theta_l^T \varPhi (x))}
+\end{equation}
+分类器为$y=\arg\max_k \theta_k^T \varPhi (x)$
+
+\paragraph{带温度Softmax}
+\begin{equation}
+    softmax(z_k,\tau )=\frac{exp(z_k/\tau )}{\sum_l exp(z_l/\tau)}
+\end{equation}
+sigmoid为sign的soft版本，softmax为$I(z_k=max_k z_k)$的soft版本。$\tau$越小，softmax越接近后者。模拟退火先用大$\tau$，再慢慢减小
+
+\section{无监督学习}
+\paragraph{维度诅咒}高维空间中难以估计(概率)密度:样本数不够;邻居太远;距离难分辨。若样本数为$n^p$则无问题，但难以承担
+
+\paragraph{降维/投影}
+$x_i \in \mathbb{R}^p $寻找映射$f:\mathbb{R}^p \to \mathbb{R}^k$，$p<k$
+
+解决维度灾难;减少数据量及计算成本;去噪声及无关特征,避免过拟合
+
+\paragraph{PCA}
+先中心化，再用平方损失寻找投影$f(x)=Ex,E\in \mathbb{R}^{p\times k}$反投影$g(z)=Dz,D\in \mathbb{R}^{k\times p}$
+\begin{equation}
+    (E^*,D^*)=\arg\min_{E,D} \sum_{i = 1}^{n}  \left\lVert x_i-DEx_i\right\rVert _2^2
+\end{equation}
+对于$E^T$和$D$的列向量$e_j,d_j$,令$z_{ij}=e_j^Tx_i$化为
+\begin{equation}
+    \sum_{i = 1}^{n}\left\lVert x_i- \sum_{j=1}^k z_{ij} d_j\right\rVert _2^2
+\end{equation}
+假设$d_j$正交,得到$z_{ij}=d_j^Tx_i$,即$e_j=d_j$,原问题化为
+\begin{equation}
+    D^*=\arg\min_{D} \sum_{i = 1}^{n}  \left\lVert x_i-DD^Tx_i\right\rVert _2^2,s.t.D^TD=I
+\end{equation}
+令$L=\sum_{i = 1}^{n}  \left\lVert x_i-DD^Tx_i\right\rVert _2^2$,得
+\begin{equation}
+\begin{split}
+    L=tr(X^TX)-tr(D^TX^TXD)=\\tr(X^TX)-\sum_{j=1}^k d_j^TX^TXd_j
+\end{split}
+\end{equation}
+原问题用拉格朗日法得
+\begin{equation}
+    D^*=\arg\min_{D} -\sum_{j=1}^k d_j^TX^TXd_j+\sum_{j=1}^k \lambda_j (d_j^T d_j-1)
+\end{equation}
+\begin{equation}
+    \forall j,-2X^TXd_j+s\lambda_j d_j=0 \Rightarrow X^TXd_j=\lambda_jd_j
+\end{equation}
+$D$为$X^\mathsf{T}X=\sum x_ix_i^\mathsf{T}$的前k个标准化特征向量,投影$z=D^\mathsf{T}x=(d_1^\mathsf{T}x,...,d_k^\mathsf{T}x)^\mathsf{T}$,反投影$\widehat{x}=Dz+\overline{x}-DD^\mathsf{T} \overline{x}$
+
+几何意义:旋转(去相关)后取方差最大的几个分量。尽可能保持最大方差
+
+\paragraph{核PCA}
+用$\varPhi (x)$代替$x$，相当于计算"相似性"
+
+\paragraph{多维尺度分析MDS}
+定义距离$d_{ij}=dist(x_i,x_j)$问题为
+\begin{equation}
+    \min_{z_1,...,z_n} \sum_i \sum_j (\left\lVert z_i-z_j \right\rVert -d_{ij})^2
+\end{equation}
+
+\paragraph{流形}
+全局非线性,局部线性。若两点为邻居,用欧几里得距离。若不是,用测地距离(连接两点且位于流形上的最短线段的长度)
+
+\paragraph{ISOMAP}
+建立一个图,顶点为数据,邻居间连边,边权为欧几里得距离。测地距离通过最短路算法计算,最后用MDS
+
+\paragraph{局部线性嵌入LLE}
+定义$W\in \mathbb{R}^{n \times n}$,若$x_i,x_j$不是邻居则$W_{i,j}=0$,优化$W$的其它元素
+\begin{equation}
+    \min_{W} \sum_{i = 1}^{n}  \left\lVert x_i-\sum_{j} W_{i,j} x_j  \right\rVert ^2
+    s.t. \sum_{j} W_{i,j}=1
+\end{equation}
+再计算投影
+\begin{equation}
+    \min_{z_1,...,z_n} \sum_{i = 1}^{n}  \left\lVert z_i-\sum_{j} W_{i,j} z_j  \right\rVert ^2
+\end{equation}
+
+\paragraph{K-MEANS}
+令$\mathcal{K} ={1,..,k}$,聚类要找$f:\mathbb{R}^p \to \mathcal{K}$,其反函数$g:\mathcal{K} \to \mathbb{R}^p$.$g$可用k个常向量$c_1,...,c_k$表示,称为codebook,每个向量称为codeword。用平方损失函数,经验风险为
+\begin{equation}
+    \mathcal{E} (f,c_1,...,c_k)=\sum_{i = 1}^{n} \left\lVert x_i-c_{f(x_i)}\right\rVert  _2^2
+\end{equation}
+K-MEANS用启发式迭代算法优化$\mathcal{E}$,到收敛为止
+\begin{enumerate}
+    \item 若$c$已知,$f(x_i)=\arg\min_j \left\lVert x_i-c_j\right\rVert  _2^2 $
+    \item 若$f$已知,$c_j=\frac{\sum_i I(f(x_i)=j)x_i}{\sum_i I(f(x_i)=j)}$
+\end{enumerate}
+通常用多个不同的初始化训练，取最好的。可先过分类(用更多的$c$)再后处理提升表现
+
+\paragraph{高斯混合模型GMM}
+第$j$簇服从高斯分布$N(\mu_j,\Sigma_j)$.令$X_i$为样本,对应簇为$Z_i$,$Z_i$间i.i.d.
+\begin{equation}
+    P(Z_i)=\prod_{j=1}^k w_j^{I(z_i=j)} , \sum_{j=1}^k w_j=1
+\end{equation}
+\begin{equation}
+    P(X_i|Z_i)=\prod_{j=1}^k (N(X_i;\mu_j,\Sigma_j))^{I(z_i=j)}
+\end{equation}
+\begin{equation}
+    P(X_i)=\sum_{j=1}^k w_j N(X_i;\mu_j,\Sigma_j)
+\end{equation}
+$X_i$i.i.d.
+
+\paragraph{期望最大化算法(EM) for GMM}
+已知参数$w_j,\mu_j,\Sigma_j$
+\begin{equation}
+\label{EG1}
+    P(Z_i=j|X_i)=\frac{w_j N(x_i;\mu_j,\Sigma_j)}{\sum_{j=1}^k w_j N(x_i;\mu_j,\Sigma_j)}\triangleq \gamma _{ij}
+\end{equation}
+\begin{equation}
+\label{EG2}
+\begin{split}
+    &w_j=\frac{\sum_i \gamma _{ij}}{n},\mu_j=\frac{\sum_i \gamma _{ij}x_i}{\sum_i \gamma _{ij}}\\
+    &\Sigma_j=\frac{\sum_i \gamma _{ij}(x_i-\mu_j)(x_i-\mu_j)^\mathsf{T}}{\sum_i \gamma _{ij}}
+\end{split}
+\end{equation}
+迭代\eqref{EG1}和\eqref{EG2}直到收敛
+\begin{equation}
+    f(x_i)=\arg\max_j P(Z_i=j|X_i=x_i)=\arg\max_j \gamma _{ij}  
+\end{equation}
+
+\paragraph{K-MEANS与GMM}
+K-MEANS是GMM的特例，认为$w_j=1/k,\Sigma_j=I$,$\gamma_{ij}$计算如下
+\begin{equation}
+\begin{split}
+    \gamma_{i,j}=&1,if P(Z_i=j|X_i)=\max_l P(Z_i=l|X_i)\\
+    &0, otherwise
+\end{split}
+\end{equation}
+k-means使用硬分配(hard assignment),GMM-EM用软分配, 因此k-means对于具有不同大小、密度或不规则形状的簇存在局限性 
+
+\paragraph{EM}
+解决带隐变量的最大似然估计问题。观测变量$X$,隐变量$Z$,待估参数$\theta$
+\begin{algorithm}[H]
+\caption{EM算法}
+\label{alg:EM}
+\begin{algorithmic}[1]
+\State $t \leftarrow 0$, initialize $\theta^0$
+\Repeat
+\State E-step: $Q(\theta) = \mathbb{E}_{Z\sim P(Z|X=x,\theta^t)}[\log P(X,Z;\theta)]$
+\State M-step: $\theta^{t+1} = \arg\max_\theta Q(\theta)$
+\Until{$\left\lVert \theta^{t+1} - \theta^t \right\rVert < \epsilon$}
+\State $\hat{\theta} = \theta^{t+1}$
+\end{algorithmic}
+\end{algorithm}
+\begin{equation}
+\begin{split}
+    &log P(X;\theta)=(\sum_z P(Z=z|X;\theta^t))logP(X;\theta)\\
+    &=\sum_z P(Z=z|X;\theta^t)logP(X,Z;\theta)\\
+    &-\sum_z P(Z=z|X;\theta^t)logP(Z|X;\theta)\\
+    &\triangleq Q(\theta)+H(\theta)
+\end{split}
+\end{equation}
+$H(\theta)$是$P(Z|X;\theta^t)$和$P(Z|X;\theta)$间的交叉熵,有$H(\theta)\geq H(\theta^t)$.我们优化$Q(\theta)$,有$Q(\theta^{t+1})\geq Q(\theta^t)$.因此有$logP(X;\theta^{t+1})\geq logP(X;\theta^{t})$.EM为贪心,每一步$P$不减
+
+\paragraph{非参数聚类}
+\paragraph{基于距离的聚类}
+凝聚聚类:自底向上,合并相近数据或簇;分离聚类:自顶向下,通过切掉距离最长的边来分割子图
+
+\paragraph{基于距离的聚类}
+Mean-shift:用Parzen窗估计局部密度并计算局部均值,将局部模式(密度最高的点)移到均值处;DBSCAN:给定一个随机选择的数据，找到它的最近邻居并估计局部密度；如果密度足够高，则将此数据及邻居设置为簇，并尝试扩展簇，直到到达低密度区域
+
+\paragraph{嵌入embedding}增加特征的维度，或为对象构建高维特征向量
+
+例:评分预测,设有n个电影和m个用户,每部电影有1个嵌入向量$m_i\in \mathbb{R}^p$,每个用户有1个嵌入向量$u_i\in \mathbb{R}^p$,评分为$r_{ij}=m_i^\textbf{T}u_j$,评分矩阵为$R=M^\textbf{T}U$,为一个低秩矩阵。若已知$R$,可用截断SVD得到$M,U$用于评分预测
+
+例:词嵌入,可用LDA思路(减小类内方差,增大类间差别)
+
+\section{基于树的模型与集成学习}
+\paragraph{回归树桩regression stump}
+\begin{equation}
+    f(x)=(\beta_1-\beta_0)sign(w^Tx+b)+\beta_0
+\end{equation}
+
+\paragraph{模型组合}
+线性组合线性模型等价于另一线性模型,一般不如此组合。若基模型表现较好且有多样性(well and diversely),则组合模型一定有提升。
+
+保证well and diversely的方法:训练数据多样性(数据分割、特征分割、不同核);训练方法多样性
+
+性能和多样性存在矛盾
+
+模型组合方法:简单相加/投票(bagging,boosting);训练组合(stacking:每个基模型学一个特征,再训练一个总的模型进行组合);局部自适应组合(树模型:将输入空间分为若干子域,每个基模型处理一个)
+
+\paragraph{bootstrap aggregating(bagging)}
+使用bootstrap sampling(自助抽样)得到数据多样性:给定数据集${x^{(i)}|_{i=1}^{n}}$,进行n次带放回的均匀采样。
+
+一个数据抽不到的概率为$(1-\frac{1}{n})^n$,当$n\rightarrow +\infty$,有$1/e$的数据抽不到。使用一次自助抽样训练一个基模型再组合起来。
+
+\paragraph{Boosting}
+多个基模型一个一个地训练,组合起来的模型会一点一点变好。
+
+\paragraph{Boosting for 回归}
+\begin{equation}
+    F_p(x)=\sum_{j = 1}^{p} \beta_j f_j(x) 
+\end{equation}
+其中$f_j$为基模型, $F_p$为总的模型.Boosting中模型一个一个训练,可考虑
+\begin{equation}
+    F_j(x)=F_{j-1}(x)+f_j(x)
+\end{equation}
+使用平方损失函数
+\begin{equation}
+\begin{split}
+       L(f_j)&=\sum_{i = 1}^{n} (y_i-F_j(x_i))^2 \\
+       &=\sum_{i = 1}^{n} (y_i-F_{j-1}(x_i)-f_j(x_i))^2 
+\end{split}
+\end{equation}
+令$r_i=y_i-F_{j-1}(x_i)$,则$f_j$在回归${(x^{(i)},r^{(i)})}$,即除$f_1$外,$f_i$在回归残差
+
+\paragraph{AdaBoost}
+\begin{algorithm}[H]
+\caption{AdaBoost Algorithm}
+\label{alg:AdaBoost}
+\begin{algorithmic}[1]
+\Require ${(x_i, y_i)|_{i=1}^n}$,$y_i\in {+1,-1}$
+\Ensure $F_p(x) = sign(\sum_{j = 1}^{p} \beta_j f_j(x))$
+\For{$j=1, \ldots, p$}
+\If{j=1}
+    \State $w_{ij}=1/n$
+\Else
+    \State $w_{ij}=w_{i,j-1}exp(-y_i\beta_{j-1}f_{j-1}(x_i))$
+    \State $w_{ij}=\frac{w_{ij}}{\sum_i w_{ij}  }$
+\EndIf
+\State 用$w_{ij}$给第$i$个数据加权,训练分类器$f_j$
+\State 计算加权错误率$e_j=\sum_i w_{ij} I(y_i \neq f_j(x_i))$
+\State $\beta_j=\frac{1}{2}ln\frac{1-e_j}{e_j}$
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+在加权数据上训练的两种方法
+\begin{enumerate}
+    \item 对loss加权,如$\sum_{i = 1}^{n} w_{ij}(-y_i ln q_i-(1-y_i)ln(1-q_i)) $
+    \item 无显式loss,可将$w_{ij}$作为概率,对数据重采样
+\end{enumerate}
+
+若$f_j$对$x_i$分类正确,则权重下降($\times exp(-\beta_j)$),反之上升($\times exp(\beta_j)$).$f_{j+1}$将更关注分类错误的数据。
+
+实际上AdaBoost使用指数损失函数,设分类器$y=sign(x)\in {+1,-1}$
+\begin{equation}
+    L(f;x,y)=exp(-yf(x))
+\end{equation}
+最小化$e_j$实际上就是在加权数据上训练一个基分类器,指数损失函数也是0-1loss的一个上界
+
+\paragraph{决策树}
+一棵树,每个内部节点对应某些特征的条件,每个叶节点表示一类(分类)或一个值(回归)
+
+\paragraph{Hunt's algotithm(HA)}
+
+\begin{algorithm}[H]
+\caption{HA}
+\label{alg:hunt}
+\begin{algorithmic}[1]
+\Require A set of training data $\mathcal{D} = \{x_i, y_i\}$
+\Ensure A classification tree or regression tree T
+\Function{HA}{$\mathcal{D}$}
+\If{$\mathcal{D}$不用分裂}
+\State \Return 叶节点
+\Else
+\State 寻找一个条件来分裂
+\State 将 $\mathcal{D}$ 按条件分裂为 $\mathcal{D}_1, \mathcal{D}_2, \ldots$,
+\State $T_1 = \textproc{HA}(\mathcal{D}_1), T_2 = \textproc{HA}(\mathcal{D}_2), \ldots$
+\State 建树,条件为根, $T_1, T_2, \ldots$ 为子树
+\EndIf
+\State \Return 生成的树
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\paragraph{分裂条件选取}
+贪心:最小化当前经验风险
+
+回归树:若使用平方损失
+\begin{equation}
+    \min_{j,t_j,\alpha_j,\beta_j}\sum_{i = 1}^{n} (\alpha_jI({x_j^{(i)}\!<\!t_j})+\beta_jI({x_j^{(i)}\!>\!t_j})-y^{(i)})^2
+\end{equation}
+取$\alpha_j$为$\{y^{(i)}|x_j^{(i)}<t_j\}$的均值,$\beta_j$同理
+
+二元分类树:设$p_0$为0的百分数,$p_1$同理,常用3个指标:
+
+误分率:$\mathcal{E} (D)=min(p_0,p_1)$
+
+熵:$H(D)=-p_1log_2p_1-p_0log_2p_0$
+
+Gini指数:$G(D)=1-p_1^2-p_0^2$
+
+使用获得信息量决定分裂几支,定义如下:
+\begin{equation}
+    r\triangleq \frac{H(D)-\sum_{i} \frac{|D_i|}{|D|}H(D_i)}{-\sum_{i} \frac{|D_i|}{|D|}log_2 \frac{|D_i|}{|D|}}
+\end{equation}
+
+\paragraph{防止过拟合}
+
+早停:提前停止分裂,即使还能分
+
+剪枝:从训练好的树上移除树枝
+
+一般来说剪枝优于早停,剪枝考虑联合成本:
+\begin{equation}
+    J(T)\triangleq \mathcal{E} (D,T) + \lambda |T|
+\end{equation}
+$\mathcal{E}$表示经验风险,$|T|$ 表示树的复杂度
+
+\section{图模型和深度学习}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\columnwidth]{sl/FC.png}
+\end{figure}
+
+\paragraph{BP网络模型}
+训练数据$D=\{(x_k,y_k)\},x_k\in \mathbb{R}^d,y_k \in \mathbb{R}^l$
+
+待学习参数:权重:$v_{ih},w_{hj}$;偏置:$\gamma_h,\theta_j$
+
+\paragraph{梯度下降GD}
+给定样本$(x^k,y^k)$,输出$\widehat{y}^k$
+\begin{equation}
+\begin{split}
+    &b_h=f(\beta_h-\gamma_h),\beta_h=\sum_{i = 1}^{d} v_{ih}x^k_{i}\\
+    &\widehat{y}^k_j=f(\alpha_j-\theta_j),\alpha_j=\sum_{h = 1}^{q} w_{hj}b_h\\
+    &E_k=\frac{1}{2}\sum_{j = 1}^{l} (\widehat{y}^k_j-y^k_j)^2
+\end{split}
+\end{equation}
+每个参数$\nu $更新为
+\begin{equation}
+\begin{split}
+    &\nu\leftarrow \nu+\bigtriangleup \nu\\
+    &\bigtriangleup \nu=-\eta \frac{\partial E_k}{\partial \nu}
+\end{split}
+\end{equation}
+
+\paragraph{参数更新(BP)}
+反向计算梯度
+\begin{equation}
+\begin{split}
+    &\frac{\partial E_k}{\partial \widehat{y}^k_j}=\widehat{y}^k_j-y^k_j\\
+    &g_j=\frac{\partial E_k}{\partial \alpha_j}=(\widehat{y}^k_j-y^k_j)f'(\alpha_j-\theta_j)\\
+    &\bigtriangleup w_{hj}=-\eta g_j b_h\\
+    &\bigtriangleup \theta_j=\eta g_j\\
+    &\frac{\partial E_k}{\partial b_h}=\sum_{j = 1}^{l} \frac{\partial E_k}{\partial \alpha_j} \frac{\partial \alpha_j}{\partial b_h}=\sum_{j = 1}^{l} g_jw_{hj}\\
+    &e_h=\frac{\partial E_k}{\partial \beta_h}=(\sum_{j = 1}^{l} g_jw_{hj})f'(\beta_h-\gamma_h)\\
+    &\bigtriangleup v_{ih}=-\eta e_h x^k_i\\
+    &\bigtriangleup \gamma_h=\eta e_h
+\end{split}
+\end{equation}
+频繁更新参数,不同样本更新可能不一致,随机梯度下降(SGD)
+
+\paragraph{累计BP}
+\begin{equation}
+    \bigtriangleup \nu=-\eta \frac{\partial E}{\partial \nu},E=\sum_{k = 1}^{m} E_k 
+\end{equation}
+标准梯度下降,参数更新不频繁,累计误差可能下降缓慢。实际应用中使用小批量(small batches of)数据
+
+\paragraph{动量}
+\begin{equation}
+\begin{split}
+    &\nu\leftarrow \nu+\bigtriangleup \nu^{(t)}\\
+    &\bigtriangleup \nu^{(t)}=-\eta \frac{\partial E_k}{\partial \nu}+\alpha \bigtriangleup \nu^{(t-1)}
+\end{split}
+\end{equation}
+使梯度下降更平滑
+
+\paragraph{局部最小值}解决方法:多次不同初始化;模拟退火;遗传算法
+
+\paragraph{防止过拟合}
+
+使用验证集(早停)
+
+正则化$E=\frac{1}{m}\sum_{k = 1}^{m} E_k + \omega \sum_i \nu _i^2  $
+
+Dropout和DropConnect
+
+\section{统计学习理论}
+\paragraph{最小描述长度原理MDL}
+
+Kolmogorov复杂度:一个对象的Kolmogorov复杂度是输出为该对象的计算机程序的最短长度
+
+例:“abababababababababababababababab”可用print(’ab’*16),Kolmogorov复杂度在Python中不超过14
+
+随机性:一个字符串是随机的，当且仅当每个产生该字符串的计算机程序至少与字符串本身一样长
+
+最小描述长度原理(MDL):统计学习任务是找到数据的最短描述
+
+对于一个数据集$D$和假设空间$H$,可表示为:
+\begin{equation}
+    h^*=\arg\min_{h \in H} L(h)+L(D|h)
+\end{equation}
+
+例:二元分类数据集$\{(x^{(i)},y^{(i)})|_{i=1}^n\}$,多个模型$h_1,...,h_m$,有如下几种编码方式:(1)编码每个$x^{(i)}$;(2)编码一些$h_j$;(3)计算$\widehat{y}^{(k)}=sign(h_j(x^{(i)}))$,编码集合$\{i|y^{(i)}\neq \widehat{y}^{(k)}\}$。最小编码长度的模型最优。
+
+若所有$h_j$和$i$均用固定长度编码,MDL相当于最小化0-1loss的经验风险
+
+若$h_j$定长编码,$i$变长编码,MDL相当于给每组数据加权
+
+若$h_j$变长编码,$i$定长编码,MDL相当于对参数有喜好
+
+MDL无需概率论的解释，更加灵活
+
+
