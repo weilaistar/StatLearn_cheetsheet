@@ -1,11 +1,16 @@
 \section{统计学习问题分类}
-监督学习：回归、分类；无监督学习：聚类、变换（降维/投影、嵌入）
+监督学习：回归（定量）、分类（定性）；无监督学习：聚类、变换（降维/投影、嵌入）
 
 
 
 \section{一元统计分析}
 \paragraph{极大似然}
-似然函数：$L(\theta)\prod_i p(x^{(i)}|\theta)$，最大化似然函数得参数的极大似然估计$\theta_{ML}$,常用办法是对似然函数取负对数，再寻找负对数似然 (NLL) 函数的极小值
+似然函数：$L(\theta)\prod_i p(x^{(i)}|\theta)$，最大化似然函数得参数的极大似然估计$\theta_{ML}$,常用办法是对似然函数取负对数，再寻找负对数似然 (NLL) 函数的极小值。
+似然函数：$p(x|\vartheta)$是$\vartheta$的函数，因为iid，整体的似然函数为$\prod_i p(y_i|\mu, \sigma^2) = \prod_i \frac{1}{\sqrt{2\pi\sigma^2}}\exp\left(-\frac{(y_i-\mu)^2}{2\sigma^2}\right)$。找到最大的整体的似然：
+$$\hat{\mu} = \arg\max_\mu\prod_i p(y_i|\mu, \sigma^2) = \bar{y},$$
+
+\paragraph{有偏/无偏估计} 方差$\sigma^2$的有偏估计$\hat{\sigma^2}=\frac{1}{N}\sum_{i=1}^N(y_i-\hat{\mu})^2$，无偏估计$\tilde{\sigma^2}=\frac{1}{N-1}\sum_{i=1}^N(y_i-\hat{\mu})^2$
+
 \paragraph{贝叶斯法}
 
 \begin{equation}
@@ -40,6 +45,8 @@
 
 k 近邻 (k-NN) 法: 在实数轴上的每个点 x，调节区间宽度 $h(x)$ 使得区间 $[x-h(x), x+h(x)]$ 中恰好有 k 个数据，则可用$\hat{f}(x) = \frac{k}{2n h(x)}$来估计密度
 
+
+
 \section{线性回归}
 
 \paragraph{最小二乘法}
@@ -51,6 +58,16 @@ k 近邻 (k-NN) 法: 在实数轴上的每个点 x，调节区间宽度 $h(x)$ �
 \begin{equation}
     w_{LS}=\frac{\sum_{i=1}^n (x^{(i)}-\bar{x})(y^{(i)}-\bar{y})}{\sum_{i=1}^n (x^{(i)}-\bar{x})^2},b_{LS}=\bar{y}-w_{LS}\bar{x}
 \end{equation}
+
+\paragraph{凸优化} 凸集$C$满足$\forall x,y \in C, \forall \alpha \in [0,1]$：
+$$\alpha x + (1-\alpha)y \in C,$$
+凸函数$f$是定义在凸集$C$的函数，满足$\forall x,y \in C, \forall \alpha \in [0,1]$：
+$$f(\alpha x + (1-\alpha)y) \le \alpha f(x) + (1-\alpha)f(y),$$
+仿射函数既是凸也是凹函数。凸优化就是在凸集上最小化一个凸函数。
+
+在凸优化中，所有的局部最优解都是全局最优解。如果一个函数是严格凸的（上式取$<$时），那么只有一个全局最优解。
+
+对偶问题也是凸优化问题。
 
 \paragraph{正则化}
 
@@ -91,6 +108,23 @@ $W\sim N(0,\sigma_{w}^2)$,$P(Y^{(i)}|W)\sim N(w x^{(i)}, \sigma^2)$, 则$\epsilo
     X^Ty=X^TXw
 \end{equation}
 
+\paragraph{基函数}
+用基函数可以将变量使用非线性方法重新映射，常见的基函数有多项式，高斯，sigmoid。应用基函数之后，可以把回归模型写成：
+$$y = \bm{w}^T\bm\phi(\bm{x}),$$
+然后用最大似然估计或者最小二乘法可得：
+$$\bm w = (\Phi^T\Phi)^{-1}\Phi^T\bm y,$$其中，$\Phi = \begin{bmatrix}
+\bm\phi_{|1}(x_1) & \cdots & \bm\phi_{|M}(x_1) \\
+\vdots & \ddots & \vdots \\
+\bm\phi_{|1}(x_N) & \cdots & \bm\phi_{|M}(x_N)
+\end{bmatrix}$是设计矩阵，$(\Phi^T\Phi)^{-1}\Phi^T$是$\Phi$的伪逆阵，$\bm y = [y_1, \ldots, y_N]^T$。
+
+用得比较多的基函数如下：
+\begin{enumerate}
+    \item 多项式：$\phi_i(x) = x^{i-1}$
+    \item 高斯：$\phi_i(x) = \exp\{-\frac{(x-\mu_i)^2}{2\sigma^2}\}$
+    \item sigmoid：$\phi_i(x) = \mathrm{sigmoid}(\frac{x - \mu_i}{a})$
+\end{enumerate}
+
 \paragraph{带基函数的回归}
 \begin{equation}
     \varPhi \triangleq (f_{1},...,f_{p})^T, y=w^T\varPhi(x)
@@ -121,6 +155,27 @@ $W\sim N(0,\sigma_{w}^2)$,$P(Y^{(i)}|W)\sim N(w x^{(i)}, \sigma^2)$, 则$\epsilo
 \begin{equation}
     S_{n}=(S_{0}^{-1}+\frac{1}{\sigma^2}X^TX)
 \end{equation}
+
+最大后验概率估计：$$w_{MAP}=m_N \to \beta(\alpha I+\beta \Phi^T\Phi)^{-1}\Phi^Ty$$
+
+最大似然估计：
+$$w_{ML}=(\Phi^T\Phi)^{-1}\Phi^Ty$$
+
+脊回归：
+$$w_{ridge}=(\Phi^T\Phi+\lambda I)^{-1}\Phi^Ty$$
+
+0均值高斯先验的贝叶斯估计等于ridge回归解，0均值Laplace先验的贝叶斯估计等于LASSO回归解。共轭先验：使得后验与先验遵循同样形式的分布。注：共轭指的是先验分布与似然函数。
+
+在贝叶斯框架中，每一个变量都有一个分布，给定一个x值，可以从w空间中取参数w进行预测。拟合曲线取决于基函数，具有一定的函数拟合限制。依赖于数据，样本点近，把握越大。从已知数据中估计后验概率：
+$$
+\begin{aligned}
+    p(y|x) &=\int p(y|x,w)p(w|x_i,y_i)dw \\
+    &=\int N(y|w^T\Phi(x),\beta^{-1})N(w|m_N,S_N)dw \\
+    &=N(y|m_N\Phi(x),\theta_N^2(x)) \\
+\end{aligned}
+$$
+其中$\theta_N^2(x)=\beta^{-1}+\Phi^T(x)S_N\Phi(x)$。 $S_N$项会随着N增大而消失。
+
 序贯学习：
 \begin{equation}
 \begin{split}
@@ -134,7 +189,7 @@ $W\sim N(0,\sigma_{w}^2)$,$P(Y^{(i)}|W)\sim N(w x^{(i)}, \sigma^2)$, 则$\epsilo
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.8\columnwidth]{sl/risks.png}
+\includegraphics[width=0.5\columnwidth]{risks.png}
 \end{figure}
 
 \paragraph{赤池信息量准则}
@@ -149,6 +204,21 @@ $AIC=2NLL+2p$,其中，$NLL$是训练数据上估计的负对数似然，是参�
 \end{equation}
 lasso 回归虽然具有特征选择等优点，但它一般情况下没有闭式解
 
+\paragraph{核函数}
+$$||\phi(x) - \phi(y)||^2 = K(x, x) + K(y, y) - 2K(x, y)$$
+$$E_D(w)+\lambda E_R(w)=\frac{1}{2}\sum_{i=1}^{N}(y_i-w^T\phi(x_i))^2 + \frac{\lambda}{2}w^Tw$$
+求解岭回归得到：
+$$w_\mathrm{ridge} = (\Phi^T\Phi + \lambda I)^{-1}\Phi^T y,$$
+其中，$\Phi$是design matrix，由所有的基函数和数据样本决定。那么输出：
+$$
+\begin{aligned}
+    \hat{y} &= w_\mathrm{ridge}^T\phi(x) = \phi^T(x)(\Phi^T\Phi + \lambda I)^{-1}\Phi^T y \\
+    &= \sum_{i=1}^N \phi^T(x)(\Phi^T\Phi + \lambda I)^{-1}\phi(x_i) y_i\\
+    &= \sum_{i=1}^N k(x, x_i)y_i,
+\end{aligned}
+$$
+等价核就是$k(x, x_i)$，是按$x = x_i$对称的函数，允许负数值。
+
 \paragraph{核回归}
 \begin{equation}
     \widehat{f}(x)\triangleq \sum_{i = 1}^{n}  y^{(i)} k(x, x^{(i)})
@@ -159,13 +229,22 @@ Mercer条件：令矩阵$K$，其中$K_{ij}=k(x^{(i)},x^{(j)})$，要求对任�
     \widehat{f}(x)\triangleq \sum_{i = 1}^{n}  y^{(i)} \varPhi (x^{(i)})^T\varPhi (x)=y^T\Phi \varPhi (x)=w^T\varPhi (x)
 \end{equation}
 
-\paragraph{K近邻回归}
+\paragraph{K近邻回归} 寻找与目标点最接近的k个训练样本，取其输出的均值作为预测值。
 \begin{equation}
     \widehat{f}(x)\triangleq \frac{1}{k}\sum_{j = 1}^{k}  y^{(n_j)},s.t. x^{(n_j)}\in N_{k}(x)
 \end{equation}
 
 
 \section{线性分类}
+
+\paragraph{分类算法的分类}二分类、多分类、多标签分类（多个二分类的聚合）
+
+\paragraph{分类和回归} 都想研究两个变量间的关系，离散情况就是分类了。分类需要量化，保证离散的输出。如果用普通的回归做分类，需要使用sign函数量化，但是这很难解。
+
+\paragraph{逻辑回归} 使用sigmoid函数$\frac{1}{1+e^{-x}}$替代sign()，易解了很多。需要重新映射$y_i = \frac{t_i + 1}{2}$，并且使用交叉熵函数而不是平方误差之和：$\min_{\bm w, b} \sum_i - y_i\log\hat{y_i} - (1-y_i)\log(1-y_i)。$
+
+\paragraph{交叉熵} 逻辑回归不是回归到特定的类别号，而是回归出一个属于某类的概率。这个概率的似然函数$P(t_i|x_i,\bm w,b) = \hat{y_i},\text{ if }t_i = +1\text{ else if }t_i = -1, 1 - \hat{y_i}$。
+可以改写成$\hat{y_i}^{y_i}\cdot(1-\hat{y_i})^{(1-y_i)}$，然后取对数似然即可获得交叉熵。
 
 \paragraph{线性分类}
 \begin{equation}
@@ -284,7 +363,8 @@ $\alpha=(\alpha_1,...,\alpha_n)^T$称为K-稀疏向量，分类器为
 \end{equation}
 其中$X=(x^{(1)},...,x^{(n)})$，把2-范数换成1-范数也行
 
-\paragraph{硬边界SVM}
+\paragraph{硬边际SVM}
+思想是最大化类之间的边际，这样对噪声不敏感且有最好的泛化能力。找到离分类边界最近的点到边界的距离：
 假设数据线性可分，分类器无误差，分类边界$w^Tx_i+b=0$，则$y_i=sign(w^Tx_i+b)$，距离可写为
 \begin{equation}
     d_i=\frac{|w^Tx_i+b|}{\|w\|_2}=\frac{y_i(w^Tx_i+b)}{\|w\|_2}
@@ -368,8 +448,6 @@ KKT条件为
 \begin{equation}
     \beta_i \xi_i=0,i=1,...,n
 \end{equation}
-
-
 代掉$\beta_i$，得
 \begin{equation}
 \begin{split}
@@ -402,6 +480,7 @@ $\max_\alpha\min_{w,b,\xi} L(w,b,\xi,\alpha)$，由KKT条件得
 分类器为$y=sign(\sum_{i = 1}^{n} \alpha_i y_i x_i^Tx + b)$，$b$由$0<\alpha_i<\lambda$的支持向量计算得出
 
 \paragraph{带基函数SVM \& 核SVM}
+把上文中所有$\bm x_i$换成$\bm\phi(\bm x_i)$，即可获得基函数版本的SVM。将上文中的$\bm{x}_i^T\bm{x}_j$换成$k(\bm x_i, \bm x_j)$，可以得到核函数版本的SVM。
 \begin{equation}
 \begin{split}
    \min_{w,b} \frac{1}{2}\|w\|^2_2+\lambda \sum_{i = 1}^{n} \xi_i, s.t. \forall i,\xi_i \geq 0 ,\\ \xi_i \geq 1-y_i(w^T \varPhi (x_i)+b)
@@ -466,7 +545,7 @@ SVM & $\max(1-y(w^T x+b),0)$ \\
 \end{table}
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.6\columnwidth]{sl/losses.png}
+\includegraphics[width=0.6\columnwidth]{losses.png}
 \end{figure}
 
 对0-1loss的上界进行优化
@@ -621,7 +700,7 @@ K-MEANS是GMM的特例，认为$w_j=1/k,\Sigma_j=I$,$\gamma_{ij}$计算如下
 k-means使用硬分配(hard assignment),GMM-EM用软分配, 因此k-means对于具有不同大小、密度或不规则形状的簇存在局限性 
 
 \paragraph{EM}
-解决带隐变量的最大似然估计问题。观测变量$X$,隐变量$Z$,待估参数$\theta$
+解决带隐变量的最大似然估计问题。观测变量$X$,隐变量$Z$,待估参数$\theta$。EM是一种贪婪算法，它肯定会收敛，但不能确保全局最优。设置不同的初始值以逃避局部最优。我们可能无法最大化期望（即Q函数）；相反，增加Q函数（例如通过梯度上升）是可以的；如果Q函数不容易最大化，这可能是有帮助的。
 \begin{algorithm}[H]
 \caption{EM算法}
 \label{alg:EM}
@@ -645,6 +724,7 @@ k-means使用硬分配(hard assignment),GMM-EM用软分配, 因此k-means对于�
 $H(\theta)$是$P(Z|X;\theta^t)$和$P(Z|X;\theta)$间的交叉熵,有$H(\theta)\geq H(\theta^t)$.我们优化$Q(\theta)$,有$Q(\theta^{t+1})\geq Q(\theta^t)$.因此有$logP(X;\theta^{t+1})\geq logP(X;\theta^{t})$.EM为贪心,每一步$P$不减
 
 \paragraph{非参数聚类}
+基于密度的聚类：Mean-shift: 局部密度的均值来替代；DBSCAN：对于每个点，如果邻点的数目小于一个阈值，那么这个点就是噪声。基于连通性的聚类: 基于图的聚类。合并聚类：自底向上聚类。分层聚类：自顶向下聚类。
 \paragraph{基于距离的聚类}
 凝聚聚类:自底向上,合并相近数据或簇;分离聚类:自顶向下,通过切掉距离最长的边来分割子图
 
@@ -656,6 +736,10 @@ Mean-shift:用Parzen窗估计局部密度并计算局部均值,将局部模式(�
 例:评分预测,设有n个电影和m个用户,每部电影有1个嵌入向量$m_i\in \mathbb{R}^p$,每个用户有1个嵌入向量$u_i\in \mathbb{R}^p$,评分为$r_{ij}=m_i^\textbf{T}u_j$,评分矩阵为$R=M^\textbf{T}U$,为一个低秩矩阵。若已知$R$,可用截断SVD得到$M,U$用于评分预测
 
 例:词嵌入,可用LDA思路(减小类内方差,增大类间差别)
+
+\paragraph{半监督学习} 分类vs聚类：分类擅长预测正确的类别，但是需要大量数据标注；聚类能够分类数据，不等同于准确的类别，不需要标注。
+监督学习vs半监督学习：监督学习的一个实际困难是缺乏准确的标签，半监督学习尝试使用未标记的数据和标记的数据，包括转导学习（不建立模型，只对未标记的数据进行预测）。
+
 
 \section{基于树的模型与集成学习}
 \paragraph{回归树桩regression stump}
@@ -678,7 +762,9 @@ Mean-shift:用Parzen窗估计局部密度并计算局部均值,将局部模式(�
 一个数据抽不到的概率为$(1-\frac{1}{n})^n$,当$n\rightarrow +\infty$,有$1/e$的数据抽不到。使用一次自助抽样训练一个基模型再组合起来。
 
 \paragraph{Boosting}
-多个基模型一个一个地训练,组合起来的模型会一点一点变好。
+多个基模型一个一个地训练,组合起来的模型会一点一点变好。    
+Boosting: 每个基础模型都顺序地训练，整体模型更加关注模型之前处理得不太好的样本。
+Bagging: 每个模型都是独自、并行地训练，整体模型尝试使每个基础模型的训练数据多样化。
 
 \paragraph{Boosting for 回归}
 \begin{equation}
@@ -730,9 +816,11 @@ Mean-shift:用Parzen窗估计局部密度并计算局部均值,将局部模式(�
     L(f;x,y)=exp(-yf(x))
 \end{equation}
 最小化$e_j$实际上就是在加权数据上训练一个基分类器,指数损失函数也是0-1loss的一个上界
+\paragraph{Bagging = bootstrap aggregating} 通过自举采样生成多个数据集。生成$M$个数据集，用每个数据集来训练一个模型。然后对它们进行平均：$f(x) = \frac{1}{M} \sum_m G_m(x)$，可以并行学习。
+
 
 \paragraph{决策树}
-一棵树,每个内部节点对应某些特征的条件,每个叶节点表示一类(分类)或一个值(回归)
+一棵树,每个内部节点对应某些特征的条件,每个叶节点表示一类(分类)或一个值(回归)。树模型由一组条件和一组基本模型组成，以树的形式组织起来。每个内部节点都是一个针对输入属性的条件——对输入空间的划分。每个叶子节点就是一个基本模型，回归时最简单为一个常数，分类时最简单为一个类别。
 
 \paragraph{Hunt's algotithm(HA)}
 
@@ -790,11 +878,52 @@ Gini指数:$G(D)=1-p_1^2-p_0^2$
 \end{equation}
 $\mathcal{E}$表示经验风险,$|T|$ 表示树的复杂度
 
+\paragraph{纯洁度/不纯度} 描述一个集合容易/不容易分为一类的程度。下面是几种不纯度(越小越好)测量方法，用$p_i$表示类$i$的占比：
+\begin{enumerate}
+    \item Entropy: $-p_0\log p_0 - p_1\log p_1$
+    \item Gini index: $1-p_0^2-p_1^2$
+    \item Misclassification error: $\min(p_0, p_1)$
+\end{enumerate}
+我们还要找到怎么样决定对一个属性进行划分。当然是纯洁度增益越大越好。这里给出了三个计算增益的方法，其中$H$是上面的熵，$G$是Gini：
+\begin{enumerate}
+    \item Information gain: $g = H(\mathcal{D}) - \sum_i \frac{|\mathcal{D}_i|}{|\mathcal{D}|}H(\mathcal{D}_i)$
+    \item Information gain ratio: $gr = \frac{g}{-\sum_i \frac{|\mathcal{D}_i|}{|\mathcal{D}|}\log \frac{|\mathcal{D}_i|}{|\mathcal{D}|}}$
+    \item Gini index gain: $gig = G(\mathcal{D}) - \sum_i \frac{|\mathcal{D}_i|}{|\mathcal{D}|}G(\mathcal{D}_i)$
+\end{enumerate}
+
+\paragraph{树的剪枝}
+采用算法\ref{alg:hunt}，我们可以构建一个预测尽可能准确的树，但是可能发生过拟合。有两个方案控制树的复杂度：
+\begin{enumerate}
+\item 早停止：停止划分，如果增益小于阈值，或者树太深、集合太小
+\item 树剪枝：从树中移除一些分支，以降低总体的误差$C_\alpha(T) = C(T) + \alpha|T|$，其中$C(T)$是经验风险（比如说预测错误率），$|T|$是树的复杂度（比如说树的高度）。
+\end{enumerate}
+
+\paragraph{回归决策树}
+最简单的情况树每个叶子节点代表一个常数。每次寻找一个属性并且选择一个划分条件，最小化误差：
+$$\min_{d, t, c_1, c_2}\left[\sum_{x_{id} \le t}(y_i - c_1)^2 + \sum_{x_{id} > t}(y_i - c_2)^2\right]$$
+最终这个回归树是个分段常函数。
+
+\paragraph{回归决策树和boosting方法的等价}
+Hunt算法：“分而治之”，条件+基础模型。Boosting：基础模型的线性组合。本质上是一样的，得到的东西也一样。
+
+\paragraph{树模型的实现}
+\begin{itemize}
+    \item ID3：用information gain
+    \item C4.5：用information gain ratio
+    \item CART：用Gini index (分类) 或者quadratic cost(回归，上面有说)，只用2路划分。
+\end{itemize}
+根据$C_\alpha(T) = C(T) + \alpha|T|$，逐渐增大$\alpha$以获得不同的树，然后用交叉验证寻找最佳的$\alpha$。
+
+\paragraph{随机森林}
+- 决策树和集合学习的结合 \\
+- 根据袋法，首先生成多个数据集(bootstrap samples)，每个数据集都会产生一个树模型\\
+- 在构建树的过程中，在分割时考虑一个随机的特征子集
+
 \section{图模型和深度学习}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\columnwidth]{sl/FC.png}
+\includegraphics[width=0.5\columnwidth]{FC.png}
 \end{figure}
 
 \paragraph{BP网络模型}
@@ -887,3 +1016,37 @@ Kolmogorov复杂度:一个对象的Kolmogorov复杂度是输出为该对象的�
 MDL无需概率论的解释，更加灵活
 
 
+\paragraph{判断题}
+对：
+1.使用一组测量值的算术平均值等效于对这组测量值求解一个最小二乘问题 2.将 p(x|y)视作 y 的
+函数，则称之为似然函数 3.如果数据的个数 N 远远小于基函数的个数 M，则使用等效核函数可
+以获得计算效率的提高 4.使用 L1-norm 的优点是能够获得稀疏的解向量 5.LASSO 回归也可以
+解释为假设参数先验服从 Laplace 分布 6.Logistic 回归可以理解为一种极大似然估计的方法 7.KL 散度恒大于等于零 8.牛顿-拉夫逊法需要计算目标函数的 Hessian 矩阵 9.梯度下降法不能确保
+找到目标函数的全局极小值 10.Fisher 线性判别分析，试图最大化类间距离、最小化类内方差 11.
+感知机学习过程有时不收敛 12.Softmax 回归得到的分类面必然是线性的 13.在 SVM 训练过程
+中，只要找出支持向量，就不用考虑其他的训练样本 14.所有的核函数一定能写成内积形式 15.
+给定独立同分布的训练集和验证集，以最小均方误差为目标，训练一个线性回归模型(无基函数)。
+如果在训练集和验证集上，该模型得到的均方误差都很大，并且两个均方误差基本一致，那么
+该模型的偏差很大，该模型方差很小。引入一组基函数，重新训练线性回归模型。基函数的维度非常高，那么结果一般来说， 会使得模型的偏差变小，但方差不会变小。在训练目标中加入
+正则化项，并给正则化项比较大的权重，那么结果一般来说，会使得模型的方差变小，但偏差
+不会变小 16.使用正则化不一定能提高在验证集上的正确率 17.生长函数总是单调不减函数 18.
+如果函数集 1 是函数集 2 的子集，那么 1 的 VC 维小于或等于 2 的 VC 维
+错：
+1.统计学习中一般不假设数据服从独立同分布 2.通过将约束优化问题转为其对偶形式，总是可
+以获得原问题的最优解 3.凸优化问题只能有一个全局极小点 4.使用基函数是为了减少数据的维
+度 5.正则化项的系数(λ)越大，则拟合的偏差越大、方差越大 6.线性分类，即规定分类器为一个
+线性函数 7.Logistic 回归是一种非线性回归方法 8.一般而言，使用目标函数二阶微分的优化方法
+是梯度下降法 9.梯度下降法可以确保找到目标函数的局部极小值 10.梯度下降法不能确保找到
+目标函数的全局极小值，而牛顿-拉夫逊法可以 11.如果感知机学习过程不能收敛，可能是搜索
+步长不合适，找到合适的搜索步长一定能收敛 12.对于线性可分的数据集，用 SVM 学习得到的
+分类器与用感知机学习得到的分类器是完全一样的 13.使用硬间隔或者软间隔 SVM，必须先判
+断数据集是否线性可分，可分就用硬间隔，不可分就用软间隔 14.对于软间隔 SVM，支持向量
+指的是那些满足 $y_i(w·x_i+b)=1$ 的训练样本 15.核技巧比较适合于训练样本数量很多且维度很
+低的情形 16.使用正则化以后，就不会出现过拟合现象了 17.正则化只控制经验风险，与模型要
+学习的参数无关 18.使用正则化以后，验证时的损失函数也要相应改变 19.如果 VC 维是无限
+大，说明函数集能够打散任意样本集 20.D 维空间中，线性支持向量机的 VC 维就是 D+121.非
+参数监督学习方法没有显式参数，所以也不存在过拟合问题
+
+\paragraph{名词解释} 自编码器：是一种旨在学习数据压缩表示的无监督神经网络。它通过编码器将高维输入映射为低维的隐变量（瓶颈层），再通过解码器尝试从该隐变量中重构出原始输入；其核心目标是最小化输入与重构输出之间的误差，从而迫使模型提取出数据中最具代表性的特征。共轭先验：是指在贝叶斯推断中，如果后验分布与先验分布属于同一种概率分布族，那么该先验分布就称为似然函数的共轭先验。使用它的核心好处在于能将复杂的统计推导简化为简单的参数更新，从而避免繁琐的数值积分计算。随机梯度下降是一种高效的参数优化算法。与每次使用全量数据更新不同，它在每一步迭代中仅随机抽取一个样本来计算梯度并更新模型，这极大提升了处理海量数据的计算速度，并赋予算法跳出局部最优解的可能性。稀疏编码是一种旨在寻找数据高效表示的无监督学习方法，其核心思想是：将输入信号表示为一组基向量的线性组合，并要求系数尽可能稀疏（即绝大多数系数为零）。这种方法能够用极少数的关键特征来抓住数据的本质结构，类似于人类视觉系统处理信息的方式，常用于特征提取和图像去噪。
+\paragraph{简答题} 降低SVM复杂度：采用非线性特征映射的近似（如随机傅里叶特征RFF），将高维核函数计算转化为低维线性运算；此外，还可以通过减少支持向量数量、使用启发式算法（如 SMO）加速求解，或在对偶问题中采用随机小批量（Mini-batch）优化来降低对超大规模数据集的显存依赖与计算开销。给个n维的x向量，现在想要一个k维的向量，k小于n实现方法：PCA。构建一个方差小于 20 的回归决策树：首先计算这 5 组 $y$ 值的总平均值，并算出初始方差。如果初始方差已经小于 20，则无需分裂，该树只有一个根节点；如果大于 20，则必须进行分裂。遍历 $x$ 轴上所有可能的切分位置（通常选每两个相邻 $x$ 值的重点）：将 5 组数据划分为左子集和右子集。计算左子集的方差和右子集的方差，并按样本数量比例加权求和。选择最佳位置：找到能使总方差下降最快（信息增益最大）的切分点。检查停止条件（目标：方差 < 20）在分裂后的每个子节点（叶子节点）中，检查该节点内 $y$ 值的方差。当所有终端节点的方差都降至 20 以下时，决策树构建完成。每个叶子节点的预测值即为该节点内所属样本 $y$ 值的平均数。决策树的分类准则选取：信息增益、信息增益率、基尼系数。
+\paragraph{概率题} $$P(B|A) = \frac{P(A|B)P(B)}{P(A)}$$  $$H(X) = -\sum_{i=1}^{n} p(x_i) \log p(x_i)$$ $$Cov(X, Y) = E(XY) - E(X)E(Y)$$ 
